@@ -1,6 +1,7 @@
 package com.study.jpa.chap02_querymethod.repository;
 
 import com.study.jpa.chap02_querymethod.entity.Student;
+import org.hibernate.engine.jdbc.Size;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -102,6 +103,49 @@ class StudentRepositoryTest {
         System.out.println("\n\n\n");
     }
 
+    @Test
+    @DisplayName("testFindCityWithJPQL")
+    void testFindCityWithJPQL() {
+        //given
+        String city = "서울시";
+        //when
+        List<Student> list = studentRepository.getByCityWithJPQL(city);
+
+        //then
+        assertEquals("춘식이", list.get(0).getName());
+        System.out.println("\n\n\n");
+        System.out.println("students = " + list.get(0));
+        System.out.println("\n\n\n");
+    }
+
+    @Test
+    @DisplayName("testSearchNameJPQL")
+    void testSearchNameJPQL() {
+        //given
+        String name = "이";
+        //when
+        List<Student> list = studentRepository.searchByNameWithJPQL(name);
+
+        //then
+        assertEquals(3, list.size());
+        System.out.println("\n\n\n");
+        list.forEach(System.out::println);
+        System.out.println("\n\n\n");
+    }
+
+    @Test
+    @DisplayName("JPQL로 삭제하기")
+    void testDeleteByJPQL() {
+        //given
+        String name = "대길이";
+        //when
+        studentRepository.deleteByNameWithJPQL(name);
+
+        //then
+        List<Student> students = studentRepository.findByName(name);
+
+        assertEquals(0, students.size());
+    }
 }
 
 
