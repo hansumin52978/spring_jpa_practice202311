@@ -43,28 +43,35 @@ public class PostService {
 
         // 게시물 정보를 DTO의 형태에 맞게 변환 (stream을 이용하여 객체마다 일괄 처리)
         List<PostDetailResponseDTO> detailList
-                = postList.stream()
-                          .map(PostDetailResponseDTO::new)
-                          .collect(Collectors.toList());
+                =  postList.stream()
+                .map(PostDetailResponseDTO::new)
+                .collect(Collectors.toList());
 
-        // DB에서 조회된 정보를 JSON 형태에 맞는 DTO로 변환 -> PostListResponseDTO
+        // DB에서 조회한 정보를 JSON 형태에 맞는 DTO로 변환 -> PostListResponseDTO
         return PostListResponseDTO.builder()
-                .count(detailList.size()) //총 게시물 수가 아니라 조회된 게시물의 개수
+                .count(detailList.size()) // 총 게시물 수가 아니라 조회된 게시물의 개수
                 .pageInfo(new PageResponseDTO(posts)) // 페이지 정보가 담긴 객체를 DTO에게 전달해서 그쪽에서 처리하게 함.
                 .posts(detailList)
                 .build();
     }
 
-    public PostDetailResponseDTO getDetail(Long id) throws Exception{
+    public PostDetailResponseDTO getDetail(Long id) throws Exception {
 
-        Post postEntity = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(id + "번 게시물이 존재하지 않았습니다!"));
+        Post postEntity = getPost(id);
 
         return new PostDetailResponseDTO(postEntity);
+
+    }
+
+    private Post getPost(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(
+                        () -> new RuntimeException(id + "번 게시물이 존재하지 않습니다!")
+                );
     }
 
     public PostDetailResponseDTO insert(PostCreateDTO dto)
-        throws Exception {
+            throws Exception {
 
         // 게시물 저장 (아직 해시태그는 insert 되지 않음)
         Post saved = postRepository.save(dto.toEntity());
@@ -79,7 +86,7 @@ public class PostService {
                                 .post(saved)
                                 .build()
                 );
-                    /*
+                /*
                     Post Entity는 DB에 save를 진행할 때 HashTag에 대한 내용을 갱신하지 않습니다.
                     HashTag Entity는 따로 save를 진행합니다. (테이블이 각각 나뉘어 있음)
                     HashTag는 양방향 맵핑이 되어있는 연관관계의 주인이기 때문에 save를 진행할 때 Post를 전달하므로
@@ -93,9 +100,26 @@ public class PostService {
                 saved.addHashTag(savedTag);
             });
         }
-
-
-
         return new PostDetailResponseDTO(saved);
+    }
+
+    public PostDetailResponseDTO modify(PostModifyDTO dto) {
+
+        // 수정 전 데이터를 조회
+        Post postEntity = getPost(dto.getPostNo());
+
+        // 수정 시작
+        postEntity.setTitle(dto.getTitle());
+        postEntity.setContent(dto.getContent());
+
+        // 수정 완료
+        Post modifiedPost = postRepository.save(postEntity);
+
+        return new PostDetailResponseDTO(modifiedPost);
+    }
+
+    public void delete(Long id) throws Exception {
+
+        postRepository.deleteById(id);
     }
 }
