@@ -31,8 +31,9 @@ public class PostDetailResponseDTO {
         this.content = post.getContent();
         this.regDate = post.getCreateDate();
         this.hashTags = post.getHashTags()
-                            .stream()
-                            .map(HashTag::getTagName)
-                            .collect(Collectors.toList());
+                .stream()
+                .map(HashTag::getTagName)
+                .collect(Collectors.toList());
     }
+
 }
